@@ -9,4 +9,4 @@
 ## 关于调试方法
 
 1. `node --inspect-brk ./.jest/test1.test.js`
-2. cmd + shift + p -> debug attach node
+2. `cmd + shift + p -> debug attach node`

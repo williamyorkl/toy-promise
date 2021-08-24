@@ -10,16 +10,12 @@ module.exports = class MPromise<T> {
     static PENDING = 'pending'
     static RESOLVED = 'resolved'
     static REJECTED = 'rejected'
-    status: string
-    promiseResult: resultType<T> | reasonType<T>
+    private status: string
+    private promiseResult: resultType<T> | reasonType<T> | null 
 
     constructor(executor:executorType<T>){
-        // 0) 初始化this指向
+        // 1) 初始化this指向
         this.initBinding()
-
-        // 1) 外面传入的executor，初始化Promise实例的时候执行
-        // 带两个callback参数（这两个cb，调用时机都是在外面）
-        executor(this.resolve,this.reject)
 
         // 2) 初始化
         this.status = MPromise.PENDING
@@ -27,7 +23,12 @@ module.exports = class MPromise<T> {
         // 3) 保存promise的结果
         this.promiseResult = null
 
-        
+        // 4) 外面传入的executor，初始化Promise实例的时候执行
+        // 带两个callback参数（这两个cb，调用时机都是在外面）
+
+        // NOTE - executor一定要在所有状态初始化后再执行
+        executor(this.resolve,this.reject)
+
     }
     
     /** 
@@ -40,8 +41,6 @@ module.exports = class MPromise<T> {
     }
 
     resolve(result:resultType<T>){
-        
-        console.log("🚀 ~ file: toyPromise.ts ~ line 46 ~ MPromise<T> ~ resolve ~ this.status", this.status)
         // (因为promise的状态只可以被修改一次，需要确保修改前是PENDING状态的)
      if(this.status === MPromise.PENDING){
         this.promiseResult = result
