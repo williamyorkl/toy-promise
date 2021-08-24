@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">37.5% </span>
+                <span class="strong">70.59% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/16</span>
+                <span class='fraction'>12/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>1/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">75% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>3/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">37.5% </span>
+                <span class="strong">70.59% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/16</span>
+                <span class='fraction'>12/17</span>
             </div>
         
             
@@ -55,7 +55,7 @@
             Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
         </p>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -113,7 +113,11 @@
 <a name='L54'></a><a href='#L54'>54</a>
 <a name='L55'></a><a href='#L55'>55</a>
 <a name='L56'></a><a href='#L56'>56</a>
-<a name='L57'></a><a href='#L57'>57</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -130,17 +134,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -148,11 +152,15 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -185,42 +193,46 @@ module.exports = class MPromise&lt;T&gt; {
     promiseResult: resultType&lt;T&gt; | reasonType&lt;T&gt;
 &nbsp;
     constructor(executor:executorType&lt;T&gt;){
+        // 0) 初始化this指向
+        this.initBinding()
+&nbsp;
         // 1) 外面传入的executor，初始化Promise实例的时候执行
         // 带两个callback参数（这两个cb，调用时机都是在外面）
         executor(this.resolve,this.reject)
 &nbsp;
         // 2) 初始化
-<span class="cstat-no" title="statement not covered" >        this.status = MPromise.PENDING</span>
+        this.status = MPromise.PENDING
 &nbsp;
         // 3) 保存promise的结果
-<span class="cstat-no" title="statement not covered" >        this.promiseResult = null</span>
+        this.promiseResult = null
 &nbsp;
-        // 4) 初始化this指向
-<span class="cstat-no" title="statement not covered" >        this.initBinding()</span>
+        
     }
     
     /** 
      * 绑定resolve, reject的this指向
      *  （因为resolve()；reject()单独执行的时候，this指向全局，导致： TypeError: Cannot read property 'status' of undefined）
      * */
-<span class="fstat-no" title="function not covered" >    in</span>itBinding(){
-<span class="cstat-no" title="statement not covered" >       this.resolve = this.resolve.bind(this)</span>
-<span class="cstat-no" title="statement not covered" >       this.reject = this.reject.bind(this)</span>
+    initBinding(){
+       this.resolve = this.resolve.bind(this)
+       this.reject = this.reject.bind(this)
     }
 &nbsp;
     resolve(result:resultType&lt;T&gt;){
-     // (因为promise的状态只可以被修改一次，需要确保修改前是PENDING状态的)
-     if(this.status === MPromise.PENDING){
+        
+        console.log("🚀 ~ file: toyPromise.ts ~ line 46 ~ MPromise&lt;T&gt; ~ resolve ~ this.status", this.status)
+        // (因为promise的状态只可以被修改一次，需要确保修改前是PENDING状态的)
+     <span class="missing-if-branch" title="if path not taken" >I</span>if(this.status === MPromise.PENDING){
 <span class="cstat-no" title="statement not covered" >        this.promiseResult = result</span>
 <span class="cstat-no" title="statement not covered" >        this.status = MPromise.RESOLVED</span>
      }
     }
 &nbsp;
 &nbsp;
-<span class="fstat-no" title="function not covered" >    re</span>ject(result:reasonType&lt;T&gt;){
+<span class="fstat-no" title="function not covered" >    re</span>ject(reason:reasonType&lt;T&gt;){
         // (因为promise的状态只可以被修改一次，需要确保修改前是PENDING状态的)
 <span class="cstat-no" title="statement not covered" >        if(this.status === MPromise.PENDING){</span>
-<span class="cstat-no" title="statement not covered" >           this.promiseResult = result</span>
+<span class="cstat-no" title="statement not covered" >           this.promiseResult = reason</span>
 <span class="cstat-no" title="statement not covered" >           this.status = MPromise.REJECTED</span>
         }
        }
@@ -232,7 +244,7 @@ module.exports = class MPromise&lt;T&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Tue Aug 24 2021 15:49:48 GMT+0800 (China Standard Time)
+                at Tue Aug 24 2021 16:33:04 GMT+0800 (China Standard Time)
             </div>
         </div>
         <script src="prettify.js"></script>
