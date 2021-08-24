@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1629791388589" clover="3.2.0">
+  <project timestamp="1629791388589" name="All files">
+    <metrics statements="16" coveredstatements="6" conditionals="4" coveredconditionals="0" methods="4" coveredmethods="2" elements="24" coveredelements="8" complexity="0" loc="16" ncloc="16" packages="1" files="1" classes="1"/>
+    <file name="toyPromise.ts" path="/Users/apple/Documents/toy-promise/toyPromise.ts">
+      <metrics statements="16" coveredstatements="6" conditionals="4" coveredconditionals="0" methods="4" coveredmethods="2"/>
+      <line num="9" count="1" type="stmt"/>
+      <line num="10" count="1" type="stmt"/>
+      <line num="11" count="1" type="stmt"/>
+      <line num="12" count="1" type="stmt"/>
+      <line num="19" count="1" type="stmt"/>
+      <line num="22" count="0" type="stmt"/>
+      <line num="25" count="0" type="stmt"/>
+      <line num="28" count="0" type="stmt"/>
+      <line num="36" count="0" type="stmt"/>
+      <line num="37" count="0" type="stmt"/>
+      <line num="42" count="1" type="cond" truecount="0" falsecount="2"/>
+      <line num="43" count="0" type="stmt"/>
+      <line num="44" count="0" type="stmt"/>
+      <line num="51" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="52" count="0" type="stmt"/>
+      <line num="53" count="0" type="stmt"/>
+    </file>
+  </project>
+</coverage>
