@@ -6,7 +6,7 @@ type reasonType<T> = T | T[]
 type executorType<T> = (resolve:(result:resultType<T>) => void,reject:(reason:reasonType<T>) => void) => void
 
 
-module.exports = class MPromise<T> {
+export default class MPromise<T> {
     static PENDING = 'pending'
     static RESOLVED = 'resolved'
     static REJECTED = 'rejected'

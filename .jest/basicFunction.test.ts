@@ -1,5 +1,5 @@
 // const MPromise = require("../js/src/toyPromise.js");
-const MPromise = require("../src/toyPromise.ts");
+import MPromise from "../src/toyPromise";
 
 test("Promise基础功能 - 状态status只可以被改变一次", () => {
   let p = new MPromise((resolve, reject) => {

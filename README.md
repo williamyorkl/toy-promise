@@ -1,5 +1,9 @@
 # 手写 promise + jest 单元测试
 
+## 关于 jest 运行单元测试时，开启 ts 检测
+
+https://github.com/kulshekhar/ts-jest
+
 ## 关于启动 ts 实时转译
 
 ```
