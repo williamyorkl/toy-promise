@@ -140,3 +140,4 @@ exports.default = {
     // Whether to use watchman for file crawling
     // watchman: true,
 };
+//# sourceMappingURL=jest.config.js.map

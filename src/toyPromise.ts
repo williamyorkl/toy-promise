@@ -97,6 +97,10 @@ export default class MPromise<T> {
       })
     }
     // 注意：这里不能用于监视this.status，然后执行cbResolvedArray，因为最外面的.then只会执行一次，而这一次只是用于把回调cb推入数组cbResolvedArray；正确执行遍历数组：1）应该放在this.status状态变化后（可以用get和set），2）或者放在每次的resolve/reject后面
+
+    // 关于then的return值，默认是return一个MPromise实例，return出去的值，要做到：1）值穿透；2）如果callbackResolved这类传入的cb执行后，有返回值的话，要按其返回值来return
+
+    return Object.create(this)
   }
 
   catch(callbackReject: handleRejectedType<T>) {
