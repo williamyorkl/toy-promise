@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "debug": "node --inspect-brk ./.jest/basicFunction.test.js"
   },
   "author": "",

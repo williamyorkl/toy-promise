@@ -4,7 +4,7 @@ import MPromise from '../src/toyPromise'
  * 一、实现promise最基本
  *  1. 状态只可以被修改一次
  *  2. 最简陋的.then()  // 不支持异步
- *  3. 最简陋的.catch
+ *  3. .catch和.reject
  */
 
 test('Promise基础功能 - 状态status;resolve', () => {
