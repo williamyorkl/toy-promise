@@ -7,6 +7,12 @@ type executorType<T> = (
   reject: (reason: reasonType<T>) => void
 ) => void
 
+// FIXME - return值不完善
+type handleResolvedType<T> = (result: resultType<T>) => void
+
+// FIXME - return值不完善
+type handleRejectedType<T> = (reject: reasonType<T>) => void
+
 export default class MPromise<T> {
   static PENDING = 'pending'
   static RESOLVED = 'resolved'
@@ -53,5 +59,14 @@ export default class MPromise<T> {
       this.promiseResult = reason
       this.status = MPromise.REJECTED
     }
+  }
+
+  then(
+    callbackResolved?: handleResolvedType<T>,
+    callbackRejected?: handleRejectedType<T>
+  ) {
+    // 注意：callbackResolved是外面传入.then()的
+    callbackResolved && callbackResolved(this.promiseResult as resultType<T>)
+    callbackRejected && callbackRejected(this.promiseResult as reasonType<T>)
   }
 }
