@@ -1,26 +1,19 @@
-// const MPromise = require("../js/src/toyPromise.js");
-import MPromise from "../src/toyPromise";
+import MPromise from '../src/toyPromise'
 
-test("Promise基础功能 - 状态status只可以被改变一次", () => {
+test('Promise基础功能 - 状态status只可以被改变一次', () => {
   let p = new MPromise((resolve, reject) => {
-    resolve(1);
-    reject(2);
-  });
-  expect(p.promiseResult).toBe(1);
-});
+    resolve(1)
+    reject(2)
+  })
 
+  expect(p.toString().includes('promiseResult: 1')).toBe(true)
+})
 
-test("Promise基础功能 - 状态status只可以被改变一次", () => {
+test('Promise基础功能 - 状态status只可以被改变一次', () => {
   let p = new MPromise((resolve, reject) => {
-    reject(3);
-    resolve(4);
-  });
-  expect(p.promiseResult).toBe(3);
-});
+    reject(3)
+    resolve(4)
+  })
 
-
-let p =  new MPromise((resolve) => {
-  resolve(3);
-});
-
-console.log("p.promiseResult", p.promiseResult)
+  expect(p.toString().includes('promiseResult: 3')).toBe(true)
+})
