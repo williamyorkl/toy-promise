@@ -37,7 +37,11 @@ var MPromise = /** @class */ (function () {
             this.promiseResult = result;
             this.status = MPromise.RESOLVED;
             this.cbResolvedArray.length &&
-                this.cbResolvedArray.forEach(function (cbRes) { return cbRes(_this.promiseResult); });
+                this.cbResolvedArray.forEach(function (cbRes) {
+                    return !cbRes(_this.promiseResult)
+                        ? cbRes(_this.promiseResult)
+                        : Object.create(_this);
+                });
         }
     };
     MPromise.prototype.reject = function (reason) {

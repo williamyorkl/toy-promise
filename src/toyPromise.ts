@@ -7,11 +7,15 @@ type executorType<T> = (
   reject: (reason: reasonType<T>) => void
 ) => void
 
-// FIXME - return值不完善
-type handleResolvedType<T> = (result: resultType<T>) => void
+type handleResolvedType<T> = (
+  result: resultType<T>
+) => resultType<T> | typeof MPromise
 
-// FIXME - return值不完善
-type handleRejectedType<T> = (reject: reasonType<T>) => void
+type handleRejectedType<T> = (
+  reject: reasonType<T>
+) => resultType<T> | typeof MPromise
+
+type cbType<T> = (params: T) => T | void
 
 export default class MPromise<T> {
   static PENDING = 'pending'
@@ -20,8 +24,8 @@ export default class MPromise<T> {
   private status: string
   private promiseResult: reasonType<T>
   private promiseReason: reasonType<T>
-  private cbResolvedArray: handleResolvedType<T>[]
-  private cbRejectedArray: handleRejectedType<T>[]
+  private cbResolvedArray: cbType<resultType<T>>[]
+  private cbRejectedArray: cbType<reasonType<T>>[]
 
   constructor(executor: executorType<T>) {
     // 1) 初始化this指向
@@ -63,7 +67,11 @@ export default class MPromise<T> {
       this.promiseResult = result
       this.status = MPromise.RESOLVED
       this.cbResolvedArray.length &&
-        this.cbResolvedArray.forEach((cbRes) => cbRes(this.promiseResult))
+        this.cbResolvedArray.forEach((cbRes) => {
+          return !cbRes(this.promiseResult)
+            ? cbRes(this.promiseResult)
+            : Object.create(this)
+        })
     }
   }
 
