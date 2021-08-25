@@ -20,6 +20,8 @@ export default class MPromise<T> {
   private status: string
   private promiseResult: reasonType<T>
   private promiseReason: reasonType<T>
+  private cbResolvedArray: handleResolvedType<T>[]
+  private cbRejectedArray: handleRejectedType<T>[]
 
   constructor(executor: executorType<T>) {
     // 1) 初始化this指向
@@ -32,7 +34,11 @@ export default class MPromise<T> {
     this.promiseResult = null
     this.promiseReason = null
 
-    // 4) 外面传入的executor，初始化Promise实例的时候执行
+    // 4) 保存.then的cb数组
+    this.cbResolvedArray = []
+    this.cbRejectedArray = []
+
+    // 5) 外面传入的executor，初始化Promise实例的时候执行
     // 带两个callback参数（这两个cb，调用时机都是在外面）
     // NOTE - executor一定要在所有状态初始化后再执行
     try {
@@ -56,6 +62,8 @@ export default class MPromise<T> {
     if (this.status === MPromise.PENDING) {
       this.promiseResult = result
       this.status = MPromise.RESOLVED
+      this.cbResolvedArray.length &&
+        this.cbResolvedArray.forEach((cbRes) => cbRes(this.promiseResult))
     }
   }
 
@@ -64,6 +72,8 @@ export default class MPromise<T> {
     if (this.status === MPromise.PENDING) {
       this.promiseReason = reason
       this.status = MPromise.REJECTED
+      this.cbRejectedArray.length &&
+        this.cbRejectedArray.forEach((cbRes) => cbRes(this.promiseReason))
     }
   }
 
@@ -71,9 +81,22 @@ export default class MPromise<T> {
     callbackResolved?: handleResolvedType<T> | null,
     callbackRejected?: handleRejectedType<T> | null
   ) {
-    // 注意：callbackResolved是外面传入.then()的
-    callbackResolved && callbackResolved(this.promiseResult)
-    callbackRejected && callbackRejected(this.promiseReason)
+    // 如果executor里面有异步函数，则让then()里面的回调函数也变成异步函数，然后再让executor里面的异步函数优先进入异步队列（问题会导致如果executor里的异步函数慢的话，这里就会失败）；所以要判断，如果this.status还是pending的状态的话，得把callback都推进数组，然后等到this.status为非pending后，循环执行callback；问题：怎样时刻监视this.status的状态呢？
+    // setTimeout(() => {
+    //   // 注意：callbackResolved是外面传入.then()的
+    //   callbackResolved && callbackResolved(this.promiseResult)
+    //   callbackRejected && callbackRejected(this.promiseReason)
+    // })
+    if (this.status === MPromise.PENDING) {
+      // NOTE - 这里不一定要在推入时包裹一层setTimeout？
+      this.cbResolvedArray.push(() => {
+        callbackResolved && callbackResolved(this.promiseResult)
+      })
+      this.cbRejectedArray.push(() => {
+        callbackRejected && callbackRejected(this.promiseReason)
+      })
+    }
+    // 注意：这里不能用于监视this.status，然后执行cbResolvedArray，因为最外面的.then只会执行一次，而这一次只是用于把回调cb推入数组cbResolvedArray；正确执行遍历数组：1）应该放在this.status状态变化后（可以用get和set），2）或者放在每次的resolve/reject后面
   }
 
   catch(callbackReject: handleRejectedType<T>) {
