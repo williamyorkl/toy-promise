@@ -1,6 +1,6 @@
-type resultType<T> = T | T[] // FIXME - 还有可能是一个对象
+type resultType<T> = T | T[] | null // FIXME - 还有可能是一个对象
 
-type reasonType<T> = T | T[]
+type reasonType<T> = T | T[] | null
 
 type executorType<T> = (
   resolve: (result: resultType<T>) => void,
@@ -18,7 +18,8 @@ export default class MPromise<T> {
   static RESOLVED = 'resolved'
   static REJECTED = 'rejected'
   private status: string
-  private promiseResult: resultType<T> | reasonType<T> | null
+  private promiseResult: reasonType<T>
+  private promiseReason: reasonType<T>
 
   constructor(executor: executorType<T>) {
     // 1) 初始化this指向
@@ -29,11 +30,16 @@ export default class MPromise<T> {
 
     // 3) 保存promise的结果
     this.promiseResult = null
+    this.promiseReason = null
 
     // 4) 外面传入的executor，初始化Promise实例的时候执行
     // 带两个callback参数（这两个cb，调用时机都是在外面）
     // NOTE - executor一定要在所有状态初始化后再执行
-    executor(this.resolve, this.reject)
+    try {
+      executor(this.resolve, this.reject)
+    } catch (error) {
+      this.reject(error) // 直接调用this.reject处理即可（既可以赋值；又可以改变状态）
+    }
   }
 
   /**
@@ -56,17 +62,21 @@ export default class MPromise<T> {
   reject(reason: reasonType<T>) {
     // (因为promise的状态只可以被修改一次，需要确保修改前是PENDING状态的)
     if (this.status === MPromise.PENDING) {
-      this.promiseResult = reason
+      this.promiseReason = reason
       this.status = MPromise.REJECTED
     }
   }
 
   then(
-    callbackResolved?: handleResolvedType<T>,
-    callbackRejected?: handleRejectedType<T>
+    callbackResolved?: handleResolvedType<T> | null,
+    callbackRejected?: handleRejectedType<T> | null
   ) {
     // 注意：callbackResolved是外面传入.then()的
-    callbackResolved && callbackResolved(this.promiseResult as resultType<T>)
-    callbackRejected && callbackRejected(this.promiseResult as reasonType<T>)
+    callbackResolved && callbackResolved(this.promiseResult)
+    callbackRejected && callbackRejected(this.promiseReason)
+  }
+
+  catch(callbackReject: handleRejectedType<T>) {
+    callbackReject(this.promiseReason)
   }
 }
