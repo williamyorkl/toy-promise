@@ -36,11 +36,12 @@ var MPromise = /** @class */ (function () {
         if (this.status === MPromise.PENDING) {
             this.promiseResult = result;
             this.status = MPromise.RESOLVED;
-            this.cbResolvedArray.length &&
+            this.cbResolvedArray.length > 0 &&
                 this.cbResolvedArray.forEach(function (cbRes) {
-                    return !cbRes(_this.promiseResult)
-                        ? cbRes(_this.promiseResult)
-                        : Object.create(_this);
+                    var returnVal = cbRes(_this.promiseResult);
+                    // 为了能让后面的.then可以用到上一个.then的返回值
+                    _this.promiseResult = returnVal;
+                    return returnVal;
                 });
         }
     };
@@ -55,7 +56,6 @@ var MPromise = /** @class */ (function () {
         }
     };
     MPromise.prototype.then = function (callbackResolved, callbackRejected) {
-        var _this = this;
         // 如果executor里面有异步函数，则让then()里面的回调函数也变成异步函数，然后再让executor里面的异步函数优先进入异步队列（问题会导致如果executor里的异步函数慢的话，这里就会失败）；所以要判断，如果this.status还是pending的状态的话，得把callback都推进数组，然后等到this.status为非pending后，循环执行callback；问题：怎样时刻监视this.status的状态呢？
         // setTimeout(() => {
         //   // 注意：callbackResolved是外面传入.then()的
@@ -64,16 +64,16 @@ var MPromise = /** @class */ (function () {
         // })
         if (this.status === MPromise.PENDING) {
             // NOTE - 这里不一定要在推入时包裹一层setTimeout？
-            this.cbResolvedArray.push(function () {
-                callbackResolved && callbackResolved(_this.promiseResult);
+            this.cbResolvedArray.push(function (result) {
+                return callbackResolved && callbackResolved(result);
             });
-            this.cbRejectedArray.push(function () {
-                callbackRejected && callbackRejected(_this.promiseReason);
+            this.cbRejectedArray.push(function (reason) {
+                return callbackRejected && callbackRejected(reason);
             });
         }
         // 注意：这里不能用于监视this.status，然后执行cbResolvedArray，因为最外面的.then只会执行一次，而这一次只是用于把回调cb推入数组cbResolvedArray；正确执行遍历数组：1）应该放在this.status状态变化后（可以用get和set），2）或者放在每次的resolve/reject后面
         // 关于then的return值，默认是return一个MPromise实例，return出去的值，要做到：1）值穿透；2）如果callbackResolved这类传入的cb执行后，有返回值的话，要按其返回值来return
-        return Object.create(this);
+        return Object.create(this); // NOTE - 这里能不能return出去一个MPromi
     };
     MPromise.prototype.catch = function (callbackReject) {
         callbackReject(this.promiseReason);
