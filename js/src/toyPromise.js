@@ -40,7 +40,7 @@ var MPromise = /** @class */ (function () {
                 this.cbResolvedArray.forEach(function (cbRes) {
                     var returnVal = cbRes(_this.promiseResult);
                     // 为了能让后面的.then可以用到上一个.then的返回值
-                    _this.promiseResult = returnVal;
+                    _this.promiseResult = returnVal; // 断言其实不好👎
                     return returnVal;
                 });
         }

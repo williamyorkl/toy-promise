@@ -26,17 +26,35 @@ test('Promise基础功能 - 1.2处理内部回调函数（executor内部异步�
   })
 })
 
-// test('Promise基础功能 - 1.3then的链式调用', (done) => {
-//   new MPromise<number>((resolve, reject) => {
-//     setTimeout(() => {
-//       resolve(111111)
-//     }, 2000)
-//   })
-//     .then((res) => {
-//       return Number(res) + 222222
-//     })
-//     .then((res) => {
-//       expect(res).toBe(333333)
-//       done()
-//     })
-// })
+test('Promise基础功能 - 1.3then的链式调用', (done) => {
+  new MPromise<number>((resolve, reject) => {
+    setTimeout(() => {
+      resolve(111111)
+    }, 2000)
+  })
+    .then((res) => {
+      return Number(res) + 222222
+    })
+    .then((res: number) => {
+      expect(res).toBe(333333)
+      done()
+    })
+})
+
+test('Promise基础功能 - 1.3then的链式调用', (done) => {
+  new MPromise<number>((resolve, reject) => {
+    setTimeout(() => {
+      resolve(111111)
+    }, 2000)
+  })
+    .then((res) => {
+      return Number(res) + 222222
+    })
+    .then((res: number) => {
+      return Number(res) + 222222 // 多次
+    })
+    .then((res: number) => {
+      expect(res).toBe(555555)
+      done()
+    })
+})

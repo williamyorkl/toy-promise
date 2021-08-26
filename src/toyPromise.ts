@@ -1,4 +1,4 @@
-type resultType<T> = T | T[] | null // FIXME - 还有可能是一个对象
+type resultType<T> = T | T[] | null // FIXME - 还有可能是一个对象或MPromise
 
 type reasonType<T> = T | T[] | null
 
@@ -7,9 +7,9 @@ type executorType<T> = (
   reject: (reason: reasonType<T>) => void
 ) => void
 
-type handleResolvedType<T> = (result: resultType<T>) => resultType<T>
-
-type handleRejectedType<T> = (reject: reasonType<T>) => resultType<T>
+// .then 传入的cb，返回值有可能是空值
+type handleResolvedType<T> = (result: resultType<T>) => resultType<T> | void
+type handleRejectedType<T> = (reject: reasonType<T>) => resultType<T> | void
 
 type cbType<T> = (params: T) => ReturnType<handleResolvedType<T>> | void
 
@@ -20,8 +20,9 @@ export default class MPromise<T> {
   private status: string
   private promiseResult: reasonType<T>
   private promiseReason: reasonType<T>
+
   private cbResolvedArray: cbType<resultType<T>>[]
-  private cbRejectedArray: cbType<reasonType<T>>[] // FIXME
+  private cbRejectedArray: cbType<reasonType<T>>[]
 
   constructor(executor: executorType<T>) {
     // 1) 初始化this指向
@@ -66,7 +67,7 @@ export default class MPromise<T> {
         this.cbResolvedArray.forEach((cbRes) => {
           const returnVal = cbRes(this.promiseResult)
           // 为了能让后面的.then可以用到上一个.then的返回值
-          this.promiseResult = returnVal as resultType<T>
+          this.promiseResult = returnVal as resultType<T> // 断言其实不好👎
           return returnVal
         })
     }
