@@ -23,7 +23,7 @@ interface MPromiseLike<T> {
   then(
     callbackResolved?: handleResolvedType<T> | null | undefined,
     callbackRejected?: handleRejectedType<T> | null | undefined
-  ): MPromiseLike<T>
+  ): MPromiseLike<T> | void
 }
 
 export default class MPromise<T> {
@@ -79,9 +79,13 @@ export default class MPromise<T> {
       this.cbResolvedArray.length > 0 &&
         this.cbResolvedArray.forEach((cbRes) => {
           const returnVal = cbRes(this.promiseResult)
-          // 为了能让后面的.then可以用到上一个.then的返回值
-          this.promiseResult = returnVal as resultType<T> // FIXME - 断言其实不好👎
-          return returnVal
+          // TODO - 待测试可行性
+          if (
+            Object.prototype.toString.apply(returnVal) === '[Object MPromise]'
+          ) {
+            returnVal &&
+              returnVal.then((res: reasonType<T>) => (this.promiseResult = res))
+          }
         })
     }
   }
@@ -102,7 +106,7 @@ export default class MPromise<T> {
 
     // callbackResolved?: any,
     // callbackRejected?: any
-  ) {
+  ): MPromiseLike<T> {
     // 如果executor里面有异步函数，则让then()里面的回调函数也变成异步函数，然后再让executor里面的异步函数优先进入异步队列（问题会导致如果executor里的异步函数慢的话，这里就会失败）；所以要判断，如果this.status还是pending的状态的话，得把callback都推进数组，然后等到this.status为非pending后，循环执行callback；问题：怎样时刻监视this.status的状态呢？
     // setTimeout(() => {
     //   // 注意：callbackResolved是外面传入.then()的
@@ -122,13 +126,19 @@ export default class MPromise<T> {
 
     // 关于then的return值，默认是return一个MPromise实例，return出去的值，要做到：1）值穿透；2）如果callbackResolved这类传入的cb执行后，有返回值的话，要按其返回值来return
     // 结合这个理解：https://kiwi-jacket-c6b.notion.site/Object-create-new-59dda0f4d526473395f53dcfaf3a292c
-    return new MPromise<T>()
+
+    // return new MPromise<T>()
+    return this
 
     /**
      *  .then()的返回值需要结合对比：
      *  1） new MPromise()
+     *    - mpromise实例，有实例方法；实例属性
      *  2） Object.create(this)
+     *    - 没有this上的实例属性
      *  3） Object.create(MPromise)
+     *    - 没有this上的实例属性
+     *  4)  Object.create(new MPromise())
      */
   }
 
