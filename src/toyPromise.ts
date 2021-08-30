@@ -78,13 +78,23 @@ export default class MPromise<T> {
       this.status = MPromise.RESOLVED
       this.cbResolvedArray.length > 0 &&
         this.cbResolvedArray.forEach((cbRes) => {
+          if ((this.status = MPromise.PENDING)) {
+          }
           const returnVal = cbRes(this.promiseResult)
-          // TODO - 待测试可行性
           if (
-            Object.prototype.toString.apply(returnVal) === '[Object MPromise]'
-          ) {
             returnVal &&
-              returnVal.then((res: reasonType<T>) => (this.promiseResult = res))
+            returnVal instanceof MPromise // 这里需要严谨的类型判断，因为returnVal有可能是T | T[]等
+          ) {
+            // .then返回后的结果，保存在当前的MPromise内部
+            /**
+             * ⚠️ 问题来了！！！
+             *  这里无法把下一次.then的结果拿出来当前的MPromise
+             */
+            this.status = MPromise.PENDING
+            // returnVal.then((res: reasonType<T>) => (this.promiseResult = res))
+
+            this.thenPromise = returnVal
+            // TODO - 其实应该return一个新的MPromise实例出去，然后用这个新的实例去吞并外部的new Promise
           }
         })
     }
