@@ -40,8 +40,15 @@ new MPromise<number>((resolve, reject) => {
       }, 100)
     })
   })
-  .then((res: any) => {
-    console.log('res3', res) // console.log('res3', 100)
+  .then((res) => {
+    return new MPromise<number>((resolve) => {
+      setTimeout(() => {
+        resolve((res as number) + 300)
+      })
+    })
+  })
+  .then((res) => {
+    console.log(res) // 600
   })
 
 // .then()马上执行后有一个返回值，这个返回值是一个新的MPromise；

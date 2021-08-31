@@ -82,14 +82,15 @@ export default class MPromise<T> {
       this.promiseResult = result // 把传入的值保存在promise内部
       this.status = MPromise.RESOLVED // 改变MPromise状态
 
+      // 执行.then收集的回调
       this.cbResolvedArray.forEach((cbRes) => {
-        // 情况2：.then执行后，返回MPromise
+        // 情况2：.then执行后，返回一个普通值
         if (this.status === MPromise.PENDING) {
           this.thenPromise?.then((res: reasonType<T>) => {
             cbRes(res)
           })
         } else {
-          // 情况1: .then的返回值是一个普通值
+          // 情况1: .then的返回值是一个MPromise
           const returnVal = cbRes(this.promiseResult)
           if (returnVal && returnVal instanceof MPromise) {
             this.status = MPromise.PENDING
