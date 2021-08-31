@@ -23,7 +23,7 @@ interface MPromiseLike<T> {
   then(
     callbackResolved?: handleResolvedType<T> | null | undefined,
     callbackRejected?: handleRejectedType<T> | null | undefined
-  ): MPromiseLike<T> | void
+  ): MPromiseLike<T>
 }
 
 export default class MPromise<T> {
@@ -36,6 +36,8 @@ export default class MPromise<T> {
 
   private cbResolvedArray: cbType<resultType<T>>[]
   private cbRejectedArray: cbType<reasonType<T>>[]
+
+  private thenPromise: MPromiseLike<T> | null
 
   constructor(executor?: executorType<T>) {
     // 1) 初始化this指向
@@ -51,6 +53,9 @@ export default class MPromise<T> {
     // 4) 保存.then的cb数组
     this.cbResolvedArray = []
     this.cbRejectedArray = []
+
+    // 初始化thenPromise
+    this.thenPromise = null
 
     // 5) 外面传入的executor，初始化Promise实例的时候执行
     // 带两个callback参数（这两个cb，调用时机都是在外面）
@@ -74,29 +79,24 @@ export default class MPromise<T> {
   resolve(result: resultType<T>) {
     // (因为promise的状态只可以被修改一次，需要确保修改前是PENDING状态的)
     if (this.status === MPromise.PENDING) {
-      this.promiseResult = result
-      this.status = MPromise.RESOLVED
-      this.cbResolvedArray.length > 0 &&
-        this.cbResolvedArray.forEach((cbRes) => {
-          if ((this.status = MPromise.PENDING)) {
-          }
-          const returnVal = cbRes(this.promiseResult)
-          if (
-            returnVal &&
-            returnVal instanceof MPromise // 这里需要严谨的类型判断，因为returnVal有可能是T | T[]等
-          ) {
-            // .then返回后的结果，保存在当前的MPromise内部
-            /**
-             * ⚠️ 问题来了！！！
-             *  这里无法把下一次.then的结果拿出来当前的MPromise
-             */
-            this.status = MPromise.PENDING
-            // returnVal.then((res: reasonType<T>) => (this.promiseResult = res))
+      this.promiseResult = result // 把传入的值保存在promise内部
+      this.status = MPromise.RESOLVED // 改变MPromise状态
 
+      this.cbResolvedArray.forEach((cbRes) => {
+        // 情况2：.then执行后，返回MPromise
+        if (this.status === MPromise.PENDING) {
+          this.thenPromise?.then((res: reasonType<T>) => {
+            cbRes(res)
+          })
+        } else {
+          // 情况1: .then的返回值是一个普通值
+          const returnVal = cbRes(this.promiseResult)
+          if (returnVal && returnVal instanceof MPromise) {
+            this.status = MPromise.PENDING
             this.thenPromise = returnVal
-            // TODO - 其实应该return一个新的MPromise实例出去，然后用这个新的实例去吞并外部的new Promise
           }
-        })
+        }
+      })
     }
   }
 
@@ -137,8 +137,7 @@ export default class MPromise<T> {
     // 关于then的return值，默认是return一个MPromise实例，return出去的值，要做到：1）值穿透；2）如果callbackResolved这类传入的cb执行后，有返回值的话，要按其返回值来return
     // 结合这个理解：https://kiwi-jacket-c6b.notion.site/Object-create-new-59dda0f4d526473395f53dcfaf3a292c
 
-    // return new MPromise<T>()
-    return this
+    return this // 如果this.thenPromise为null的话，则返回this
 
     /**
      *  .then()的返回值需要结合对比：

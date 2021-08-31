@@ -16,7 +16,7 @@ import MPromise from '../src/toyPromise'
 
  */
 
-test('Promise基础功能 - 1.3then的链式调用', (done) => {
+test('Promise基础功能 - 2.1then的链式调用：返回普通值', (done) => {
   new MPromise<number>((resolve, reject) => {
     setTimeout(() => {
       resolve(111111)
@@ -25,11 +25,27 @@ test('Promise基础功能 - 1.3then的链式调用', (done) => {
     .then((res) => {
       return Number(res) + 222222
     })
-    .then((res: number) => {
-      return Number(res) + 222222 // 多次
+    .then((res) => {
+      expect(res).toBe(333333)
+      done()
     })
-    .then((res: number) => {
-      expect(res).toBe(555555)
+})
+
+test('Promise基础功能 - 2.1then的链式调用：返回普通值', (done) => {
+  new MPromise<number>((resolve, reject) => {
+    setTimeout(() => {
+      resolve(100)
+    }, 200)
+  })
+    .then((res) => {
+      return new MPromise<number>((resolve) => {
+        setTimeout(() => {
+          resolve((res as number) + 200)
+        }, 100)
+      })
+    })
+    .then((res) => {
+      expect(res).toBe(300)
       done()
     })
 })

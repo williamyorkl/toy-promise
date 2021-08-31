@@ -31,17 +31,17 @@ new MPromise<number>((resolve, reject) => {
   debugger
   setTimeout(() => {
     resolve(100)
-  }, 2000)
+  }, 300)
 })
   .then((res) => {
     return new MPromise<number>((resolve) => {
       setTimeout(() => {
         resolve((res as number) + 200)
-      }, 1000)
+      }, 100)
     })
   })
   .then((res: any) => {
-    console.log('res3', res)
+    console.log('res3', res) // console.log('res3', 100)
   })
 
 // .then()马上执行后有一个返回值，这个返回值是一个新的MPromise；
