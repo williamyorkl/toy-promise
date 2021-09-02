@@ -39,7 +39,7 @@ new MPromise<number>((resolve, reject) => {
         resolve((res as number) + 200)
       }, 100)
     })
-  })
+  }) // return mpromise2,可以通过.then拿到拿到里面res的值，通过mpromise2的resolve，可以让下一个then拿到res的值 TODO - 画图
   .then((res) => {
     return new MPromise<number>((resolve) => {
       setTimeout(() => {

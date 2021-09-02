@@ -34,10 +34,10 @@ export default class MPromise<T> {
   private promiseResult: reasonType<T>
   private promiseReason: reasonType<T>
 
-  private cbResolvedArray: cbType<resultType<T>>[]
+  private cbResolvedArray: any[] // FIXME - 数组里面存储的是对象,且该对象要符合{ cbResolveFn: xxx , subResolve: xxx  }
   private cbRejectedArray: cbType<reasonType<T>>[]
 
-  private thenPromise: MPromiseLike<T> | null
+  private thenPromise: MPromiseLike<T> | null | undefined // undefined的原因是给他赋值了一个未被声明的值
 
   constructor(executor?: executorType<T>) {
     // 1) 初始化this指向
@@ -82,20 +82,44 @@ export default class MPromise<T> {
       this.promiseResult = result // 把传入的值保存在promise内部
       this.status = MPromise.RESOLVED // 改变MPromise状态
 
-      // 执行.then收集的回调
-      this.cbResolvedArray.forEach((cbRes) => {
-        // 情况2：.then执行后，返回一个普通值
-        if (this.status === MPromise.PENDING) {
-          this.thenPromise?.then((res: reasonType<T>) => {
-            cbRes(res)
+      // // 执行.then收集的回调
+      // this.cbResolvedArray.forEach((cbRes) => {
+      //   // 情况2：.then执行后，返回一个普通值
+      //   if (this.status === MPromise.PENDING) {
+      //     const nextPromise = this.thenPromise?.then((res: reasonType<T>) => {
+      //       cbRes(res) // 下一个then里面的回调，需要执行完才知道return值
+      //     })
+
+      //     this.status = MPromise.PENDING
+
+      //     this.thenPromise = nextPromise
+      //   } else {
+      //     // 情况1: .then的返回值是一个MPromise
+      //     const returnVal = cbRes(this.promiseResult)
+
+      //     // 判断then里面回调的返回值
+      //     if (returnVal && returnVal instanceof MPromise) {
+      //       this.status = MPromise.PENDING
+
+      //       this.thenPromise = returnVal
+      //     } else {
+      //       // 当then返回的不是promise
+      //       cbRes(this.promiseResult)
+      //     }
+      //   }
+      // })
+
+      /**
+       * NOTE - 如果是return下一轮的promise实例
+       */
+
+      // forEach的时候就可以把下一轮promise实例中的resolve“拿”出来；同时可以获得.then里面cb执行后的结果
+      this.cbResolvedArray.forEach(({ cbResolveFn, subResolve }) => {
+        const thenPromise = cbResolveFn(this.promiseResult)
+        if (thenPromise instanceof MPromise) {
+          thenPromise.then((res) => {
+            subResolve(res) // 这里就是通过return出去的子promise的resolve了then里面的回调
           })
-        } else {
-          // 情况1: .then的返回值是一个MPromise
-          const returnVal = cbRes(this.promiseResult)
-          if (returnVal && returnVal instanceof MPromise) {
-            this.status = MPromise.PENDING
-            this.thenPromise = returnVal
-          }
         }
       })
     }
@@ -124,21 +148,42 @@ export default class MPromise<T> {
     //   callbackResolved && callbackResolved(this.promiseResult)
     //   callbackRejected && callbackRejected(this.promiseReason)
     // })
-    if (this.status === MPromise.PENDING) {
-      // NOTE - 这里不一定要在推入时包裹一层setTimeout？
-      this.cbResolvedArray.push((result: resultType<T>) => {
-        return callbackResolved && callbackResolved(result)
-      })
-      this.cbRejectedArray.push((reason) => {
-        return callbackRejected && callbackRejected(reason)
-      })
-    }
+
+    // if (this.status === MPromise.PENDING) {
+    //   // NOTE - 这里不一定要在推入时包裹一层setTimeout？
+    //   this.cbResolvedArray.push((result: resultType<T>) => {
+    //     return callbackResolved && callbackResolved(result)
+    //   })
+    //   this.cbRejectedArray.push((reason) => {
+    //     return callbackRejected && callbackRejected(reason)
+    //   })
+    // }
+
     // 注意：这里不能用于监视this.status，然后执行cbResolvedArray，因为最外面的.then只会执行一次，而这一次只是用于把回调cb推入数组cbResolvedArray；正确执行遍历数组：1）应该放在this.status状态变化后（可以用get和set），2）或者放在每次的resolve/reject后面
 
     // 关于then的return值，默认是return一个MPromise实例，return出去的值，要做到：1）值穿透；2）如果callbackResolved这类传入的cb执行后，有返回值的话，要按其返回值来return
     // 结合这个理解：https://kiwi-jacket-c6b.notion.site/Object-create-new-59dda0f4d526473395f53dcfaf3a292c
 
-    return this // 如果this.thenPromise为null的话，则返回this
+    // return this // 如果this.thenPromise为null的话，则返回this
+
+    /**
+     * NOTE - 如果是return下一轮的promise实例
+     */
+
+    return new MPromise<T>((resolve, reject) => {
+      // 以下的会在return的时候马上创建了新的promise实例，对象里面的方法会马上执行
+      if (this.status === MPromise.PENDING) {
+        this.cbResolvedArray.push({
+          // 1）
+          cbResolveFn: (result: resultType<T>) => {
+            return callbackResolved && callbackResolved(result)
+          },
+          // 2）
+          subResolve: resolve,
+        })
+        // TODO - 后面再完善reject
+      }
+    })
 
     /**
      *  .then()的返回值需要结合对比：
